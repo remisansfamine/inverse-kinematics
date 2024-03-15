@@ -7,16 +7,20 @@ public class CCDIK : InverseKinematicsDescriptor
 {
     [SerializeField] int maxIterationCount = 5;
 
-    public override void UpdateJoints(ref List<Joint> joints, in Vector3 goal)
+    private List<Joint> joints = null;
+
+    public override void SetJoints(in List<Joint> newJoints)
     {
-        Joint effector = joints.First();
+        joints = newJoints;
+    }
+
+    public override void UpdateJoints(in Vector3 goal)
+    {
+        Joint effector = joints.Last();
         for (int iterationCount = 0; iterationCount < maxIterationCount; iterationCount++) 
         {
-            for (int i = 0; i < joints.Count - 2; i++)
-            { 
-                for (int j = 1; j < i + 3 && j < joints.Count; j++) 
-                    UpdateBone(effector.Position, joints[j], in goal);
-            }
+            for (int i = joints.Count - 1; i >= 0; i--)
+                 UpdateBone(effector.Position, joints[i], in goal);
         }
     }
 

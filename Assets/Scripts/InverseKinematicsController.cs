@@ -22,12 +22,14 @@ public class InverseKinematicsController : MonoBehaviour
     {
         List<Transform> bonesTransforms = new List<Transform>();
         Transform current = effector;
-
+        
         while (current != null && current != baseBone)
         {
-            bonesTransforms.Add(current);
+            bonesTransforms.Insert(0, current);
             current = current.parent;
         }
+
+        bonesTransforms.Insert(0, baseBone);
 
         int deltaSize = joints.Count - bonesTransforms.Count;
         if (deltaSize < 0)
@@ -38,16 +40,21 @@ public class InverseKinematicsController : MonoBehaviour
         {
             joints.RemoveRange(bonesTransforms.Count, deltaSize);
         }
-
+        
         for (int i = 0; i < joints.Count; i++)
         {
             joints[i].transform = bonesTransforms[i];
         }
     }
 
+    private void Start()
+    {
+        Solver?.SetJoints(in joints);
+    }
+
     void LateUpdate()
     {
         if (goal)
-            Solver?.UpdateJoints(ref joints, goal.position);
+            Solver?.UpdateJoints(goal.position);
     }
 }
