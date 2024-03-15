@@ -24,7 +24,7 @@ public class Joint
     public float ConstraintMaxAngle => constraintMaxAngle;
 
     [SerializeField]
-    private bool useConstraint;
+    private bool useConstraint = false;
 
     [SerializeField]
     private Vector3 constraintAxis = Vector3.forward;
@@ -38,5 +38,7 @@ public class Joint
 
 public class InverseKinematicsDescriptor : ScriptableObject
 {
-    public virtual void UpdateJoints(ref List<Joint> joints, in Vector3 goal) => throw new NotImplementedException();
+    public virtual void SetJoints(in List<Joint> newJoints) => throw new NotImplementedException();
+
+    public virtual void UpdateJoints(in Vector3 goal) => throw new NotImplementedException();
 }
