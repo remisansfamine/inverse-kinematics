@@ -1,16 +1,13 @@
-using System.Collections;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
-using Unity.VisualScripting;
 using UnityEngine;
-using static UnityEditor.Experimental.GraphView.Port;
 
 public class InverseKinematicsController : MonoBehaviour
 {
     [SerializeField] private InverseKinematicsDescriptor Solver = null;
 
     [SerializeField] private List<Joint> joints = new List<Joint>();
+    [SerializeField] private List<Constraint> constraints = new List<Constraint>();
 
     [SerializeField] private Transform baseBone = null;
 
@@ -50,6 +47,7 @@ public class InverseKinematicsController : MonoBehaviour
     private void Start()
     {
         Solver?.SetJoints(in joints);
+        Solver?.SetConstraints(in constraints);
     }
 
     void LateUpdate()
