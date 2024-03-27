@@ -20,7 +20,7 @@ public class InverseKinematicsController : MonoBehaviour
         List<Transform> bonesTransforms = new List<Transform>();
         Transform current = effector;
         
-        while (current != null && current != baseBone)
+        while (current is not null && current != baseBone)
         {
             bonesTransforms.Insert(0, current);
             current = current.parent;

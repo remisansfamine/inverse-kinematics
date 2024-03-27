@@ -16,12 +16,16 @@ public class FABRIK : InverseKinematicsDescriptor
 
     private List<Joint> joints = null;
 
-    void BackwardSolve(in List<float> lengths, in Vector3 goal)
+    Vector3 initialPosition = Vector3.zero;
+
+    private Joint firstEffector = null;
+    private Joint endEffector = null;
+
+    void BackwardSolve(in Vector3 goal)
     {
-        Joint endEffector = joints.Last();
         endEffector.Position = goal;
 
-        for (int i = joints.Count - 2; i > 0; i--)
+        for (int i = joints.Count - 2; i >= 0; i--)
         {
             float boneLength = Vector3.Distance(joints[i].Position, joints[i + 1].Position);
             float lambda = boneLength != 0f ? lengths[i] / boneLength : 0f;
@@ -30,8 +34,10 @@ public class FABRIK : InverseKinematicsDescriptor
         }
     }
 
-    void ForwardSolve(in List<float> lengths)
+    void ForwardSolve()
     {
+        firstEffector.Position = initialPosition;
+
         for (int i = 0; i < joints.Count - 1; i++)
         {
             float boneLength = Vector3.Distance(joints[i].Position, joints[i + 1].Position);
@@ -45,7 +51,12 @@ public class FABRIK : InverseKinematicsDescriptor
     {
         joints = newJoints;
 
-        Vector3 lastPosition = joints.Last().Position;
+        firstEffector = joints.First();
+        endEffector = joints.Last();
+
+        initialPosition = firstEffector.Position;
+
+        Vector3 lastPosition = initialPosition;
         for (int i = 0; i < joints.Count - 1; i++)
         {
             float boneLength = Vector3.Distance(joints[i].Position, lastPosition);
@@ -71,13 +82,12 @@ public class FABRIK : InverseKinematicsDescriptor
         }
         else
         {
-            Joint endEffector = joints.Last();
             float reachDistance = Vector3.SqrMagnitude(endEffector.Position - goal);
 
             for (int iterationCount = 0; iterationCount < maxIterationCount && reachDistance >= epsilon * epsilon; iterationCount++)
             {
-                BackwardSolve(lengths, goal);
-                ForwardSolve(lengths);
+                BackwardSolve(goal);
+                ForwardSolve();
                 reachDistance = Vector3.SqrMagnitude(endEffector.Position - goal);
             }
         }
