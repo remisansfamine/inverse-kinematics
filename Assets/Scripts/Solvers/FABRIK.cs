@@ -9,7 +9,7 @@ public class FABRIK : InverseKinematicsDescriptor
 {
     [SerializeField] int maxIterationCount = 5;
         
-    [SerializeField] float epsilon = 0.1f;
+    [SerializeField] float tolerance = 0.1f;
 
     private float totalLength = 0f;
     private List<float> lengths = new List<float>();
@@ -47,6 +47,20 @@ public class FABRIK : InverseKinematicsDescriptor
         }
     }
 
+    void ComputeLengths()
+    {
+        lengths.Clear();
+        totalLength = 0f;
+
+        for (int i = 0; i < joints.Count - 1; i++)
+        {
+            float boneLength = Vector3.Distance(joints[i].Position, joints[i + 1].Position);
+
+            lengths.Add(boneLength);
+            totalLength += boneLength;
+        }
+    }
+
     public override void SetJoints(in List<Joint> newJoints)
     {
         joints = newJoints;
@@ -56,22 +70,13 @@ public class FABRIK : InverseKinematicsDescriptor
 
         initialPosition = firstEffector.Position;
 
-        Vector3 lastPosition = initialPosition;
-        for (int i = 0; i < joints.Count - 1; i++)
-        {
-            float boneLength = Vector3.Distance(joints[i].Position, lastPosition);
-
-            lengths.Add(boneLength);
-            totalLength += boneLength;
-
-            lastPosition = joints[i].Position;
-        }
+        ComputeLengths();
     }
 
     public override void UpdateJoints(in Vector3 goal)
     {
-        float distance = Vector3.SqrMagnitude(joints.First().Position - goal);
-        if (distance > totalLength * totalLength)
+        float sqrDistance = Vector3.SqrMagnitude(firstEffector.Position - goal);
+        if (sqrDistance > totalLength * totalLength)
         {
             for (int i = 0; i < joints.Count - 1; i++)
             {
@@ -82,13 +87,14 @@ public class FABRIK : InverseKinematicsDescriptor
         }
         else
         {
-            float reachDistance = Vector3.SqrMagnitude(endEffector.Position - goal);
+            float sqrReachDistance = Vector3.SqrMagnitude(endEffector.Position - goal);
+            float sqrTolerance = tolerance * tolerance;
 
-            for (int iterationCount = 0; iterationCount < maxIterationCount && reachDistance >= epsilon * epsilon; iterationCount++)
+            for (int iterationCount = 0; iterationCount < maxIterationCount && sqrReachDistance >= sqrTolerance; iterationCount++)
             {
                 BackwardSolve(goal);
                 ForwardSolve();
-                reachDistance = Vector3.SqrMagnitude(endEffector.Position - goal);
+                sqrReachDistance = Vector3.SqrMagnitude(endEffector.Position - goal);
             }
         }
     }
