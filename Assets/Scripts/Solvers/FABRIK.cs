@@ -16,10 +16,13 @@ public class FABRIK : InverseKinematicsDescriptor
 
     private List<Joint> joints = null;
 
-    Vector3 initialPosition = Vector3.zero;
-
     private Joint firstEffector = null;
     private Joint endEffector = null;
+
+    [SerializeField] private bool useClampedLerp;
+
+    private delegate Vector3 LerpDelegate(Vector3 a, Vector3 b, float t); // This defines what type of method you're going to call.
+    private LerpDelegate lerpMethod;
 
     void BackwardSolve(in Vector3 goal)
     {
@@ -30,11 +33,11 @@ public class FABRIK : InverseKinematicsDescriptor
             float boneLength = Vector3.Distance(joints[i].Position, joints[i + 1].Position);
             float lambda = boneLength != 0f ? lengths[i] / boneLength : 0f;
 
-            joints[i].Position = Vector3.LerpUnclamped(joints[i + 1].Position, joints[i].Position, lambda);
+            joints[i].Position = lerpMethod(joints[i + 1].Position, joints[i].Position, lambda);
         }
     }
 
-    void ForwardSolve()
+    void ForwardSolve(in Vector3 initialPosition)
     {
         firstEffector.Position = initialPosition;
 
@@ -43,7 +46,7 @@ public class FABRIK : InverseKinematicsDescriptor
             float boneLength = Vector3.Distance(joints[i].Position, joints[i + 1].Position);
             float lambda = boneLength != 0f ? lengths[i] / boneLength : 0f;
 
-            joints[i + 1].Position = Vector3.LerpUnclamped(joints[i].Position, joints[i + 1].Position, lambda);
+            joints[i + 1].Position = lerpMethod(joints[i].Position, joints[i + 1].Position, lambda);
         }
     }
 
@@ -61,16 +64,16 @@ public class FABRIK : InverseKinematicsDescriptor
         }
     }
 
-    public override void SetJoints(in List<Joint> newJoints)
+    public override void Initialize(in List<Joint> newJoints)
     {
         joints = newJoints;
 
         firstEffector = joints.First();
         endEffector = joints.Last();
 
-        initialPosition = firstEffector.Position;
-
         ComputeLengths();
+
+        lerpMethod = useClampedLerp ? Vector3.Lerp : Vector3.LerpUnclamped;
     }
 
     public override void UpdateJoints(in Vector3 goal)
@@ -82,18 +85,20 @@ public class FABRIK : InverseKinematicsDescriptor
             {
                 float length = Vector3.Distance(joints[i].Position, goal);
                 float lambda = length != 0f ? lengths[i] / length : 0;
-                joints[i + 1].transform.position = Vector3.LerpUnclamped(joints[i].Position, goal, lambda);
+                joints[i + 1].transform.position = lerpMethod(joints[i].Position, goal, lambda);
             }
         }
         else
         {
+            Vector3 initialPosition = firstEffector.Position;
+
             float sqrReachDistance = Vector3.SqrMagnitude(endEffector.Position - goal);
             float sqrTolerance = tolerance * tolerance;
 
             for (int iterationCount = 0; iterationCount < maxIterationCount && sqrReachDistance >= sqrTolerance; iterationCount++)
             {
                 BackwardSolve(goal);
-                ForwardSolve();
+                ForwardSolve(initialPosition);
                 sqrReachDistance = Vector3.SqrMagnitude(endEffector.Position - goal);
             }
         }

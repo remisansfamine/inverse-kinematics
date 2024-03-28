@@ -4,7 +4,8 @@ using UnityEngine;
 
 public class InverseKinematicsController : MonoBehaviour
 {
-    [SerializeField] private InverseKinematicsDescriptor Solver = null;
+    [SerializeField] private InverseKinematicsDescriptor solverScript = null;
+    private InverseKinematicsDescriptor solverInstance = null;
 
     [SerializeField] private List<Joint> joints = new List<Joint>();
     [SerializeField] private List<Constraint> constraints = new List<Constraint>();
@@ -46,13 +47,17 @@ public class InverseKinematicsController : MonoBehaviour
 
     private void Start()
     {
-        Solver?.SetJoints(in joints);
-        Solver?.SetConstraints(in constraints);
+        if (solverScript is null)
+            return;
+
+        solverInstance = Instantiate(solverScript);
+        solverInstance.Initialize(in joints);
+        solverInstance.SetConstraints(in constraints);
     }
 
     void LateUpdate()
     {
         if (goal)
-            Solver?.UpdateJoints(goal.position);
+            solverInstance?.UpdateJoints(goal.position);
     }
 }
