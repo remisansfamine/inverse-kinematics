@@ -10,7 +10,7 @@ public class CCDIK : InverseKinematicsDescriptor
     private List<Joint> joints = null;
     private List<Constraint> contraints = null;
 
-    public override void SetJoints(in List<Joint> newJoints)
+    public override void Initialize(in List<Joint> newJoints)
     {
         joints = newJoints;
     }
