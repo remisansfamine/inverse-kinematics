@@ -44,7 +44,7 @@ public class Constraint
 
 public class InverseKinematicsDescriptor : ScriptableObject
 {
-    public virtual void SetJoints(in List<Joint> newJoints) => throw new NotImplementedException();
+    public virtual void Initialize(in List<Joint> newJoints) => throw new NotImplementedException();
     public virtual void SetConstraints(in List<Constraint> newConstraints) { }
     public virtual void UpdateJoints(in Vector3 goal) => throw new NotImplementedException();
 }
