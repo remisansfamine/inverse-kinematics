@@ -4,24 +4,24 @@ using UnityEngine;
 
 public class InverseKinematicsController : MonoBehaviour
 {
-    [SerializeField] private InverseKinematicsDescriptor solverScript = null;
-    private InverseKinematicsDescriptor solverInstance = null;
+    [SerializeField] protected InverseKinematicsDescriptor solverScript = null;
+    protected InverseKinematicsDescriptor solverInstance = null;
 
-    [SerializeField] private List<Joint> joints = new List<Joint>();
-    [SerializeField] private List<Constraint> constraints = new List<Constraint>();
+    [SerializeField] protected List<Joint> joints = new List<Joint>();
+    [SerializeField] protected List<Constraint> constraints = new List<Constraint>();
 
-    [SerializeField] private Transform baseBone = null;
+    [SerializeField] protected Transform baseBone = null;
 
-    [SerializeField] private Transform effector = null;
+    [SerializeField] protected Transform effector = null;
 
-    [SerializeField] private Transform goal = null;
+    [SerializeField] protected Transform goal = null;
 
-    private void OnValidate()
+    protected virtual void OnValidate()
     {
         List<Transform> bonesTransforms = new List<Transform>();
         Transform current = effector;
         
-        while (current is not null && current != baseBone)
+        while (current && current != baseBone)
         {
             bonesTransforms.Insert(0, current);
             current = current.parent;
@@ -43,11 +43,12 @@ public class InverseKinematicsController : MonoBehaviour
         {
             joints[i].transform = bonesTransforms[i];
         }
+
     }
 
-    private void Start()
+    protected virtual void Start()
     {
-        if (solverScript is null)
+        if (!solverScript)
             return;
 
         solverInstance = Instantiate(solverScript);
@@ -55,7 +56,7 @@ public class InverseKinematicsController : MonoBehaviour
         solverInstance.SetConstraints(in constraints);
     }
 
-    void LateUpdate()
+    protected virtual void LateUpdate()
     {
         if (goal)
             solverInstance?.UpdateJoints(goal.position);

@@ -1,6 +1,13 @@
+using JetBrains.Annotations;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+
+[System.Serializable]
+public class Bone
+{
+    public Transform primitive = null;
+}
 
 [System.Serializable]
 public class Joint
@@ -13,6 +20,8 @@ public class Joint
     }
 
     public Transform transform = null;
+
+    public Bone bone = null;
 
     public Vector3 Position { get => transform.position; set => transform.position = value; }
     public Vector3 LocalPosition { get => transform.localPosition; set => transform.localPosition = value; }
