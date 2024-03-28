@@ -26,11 +26,11 @@ public class CCDIK : InverseKinematicsDescriptor
         for (int iterationCount = 0; iterationCount < maxIterationCount; iterationCount++) 
         {
             for (int i = joints.Count - 1; i >= 0; i--)
-                 UpdateBone(effector.Position, joints[i], in goal);
+                 UpdateJoint(effector.Position, joints[i], in goal);
         }
     }
 
-    public void UpdateBone(Vector3 effector, Joint joint, in Vector3 goal)
+    public void UpdateJoint(Vector3 effector, Joint joint, in Vector3 goal)
     {
         Vector3 jointPosition = joint.Position;
 

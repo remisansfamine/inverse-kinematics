@@ -15,6 +15,7 @@ public class FABRIK : InverseKinematicsDescriptor
     private List<float> lengths = new List<float>();
 
     private List<Joint> joints = null;
+    private List<Constraint> contraints = null;
 
     private Joint firstEffector = null;
     private Joint endEffector = null;
@@ -47,6 +48,7 @@ public class FABRIK : InverseKinematicsDescriptor
             float lambda = boneLength != 0f ? lengths[i] / boneLength : 0f;
 
             joints[i + 1].Position = lerpMethod(joints[i].Position, joints[i + 1].Position, lambda);
+
         }
     }
 
@@ -74,6 +76,11 @@ public class FABRIK : InverseKinematicsDescriptor
         ComputeLengths();
 
         lerpMethod = useClampedLerp ? Vector3.Lerp : Vector3.LerpUnclamped;
+    }
+
+    public override void SetConstraints(in List<Constraint> newContraints)
+    {
+        contraints = newContraints;
     }
 
     public override void UpdateJoints(in Vector3 goal)
