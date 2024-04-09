@@ -26,11 +26,11 @@ public class CCDIK : InverseKinematicsDescriptor
         for (int iterationCount = 0; iterationCount < maxIterationCount; iterationCount++) 
         {
             for (int i = joints.Count - 1; i >= 0; i--)
-                 UpdateJoint(effector.Position, joints[i], in goal);
+                 UpdateJoint(joints[i], effector.Position, in goal);
         }
     }
 
-    public void UpdateJoint(Vector3 effector, Joint joint, in Vector3 goal)
+    public void UpdateJoint(Joint joint, in Vector3 effector, in Vector3 goal)
     {
         Vector3 jointPosition = joint.Position;
 
@@ -40,11 +40,18 @@ public class CCDIK : InverseKinematicsDescriptor
         Quaternion fromToRotation = Quaternion.FromToRotation(jointToEffector, jointToGoal);
         joint.Rotation = fromToRotation * joint.Rotation;
 
+        // Get the joint associated constraint and apply it if there is any
         Constraint constraint = contraints.FirstOrDefault(constraint => constraint.ConstrainedJoint == joint.transform);
 
         if (constraint is null)
             return;
 
+        ApplyConstraint(joint, fromToRotation, constraint);
+    }
+
+    protected void ApplyConstraint(Joint joint, in Quaternion fromToRotation, in Constraint constraint)
+    {
+        // Get the constraint axis in the joint-goal-effector space
         Vector3 currentAxis = fromToRotation * constraint.ConstraintAxis;
         Quaternion rotationBack = Quaternion.FromToRotation(currentAxis, constraint.ConstraintAxis);
 
@@ -54,6 +61,7 @@ public class CCDIK : InverseKinematicsDescriptor
         float angle;
         joint.Rotation.ToAngleAxis(out angle, out axis);
 
+        // Clamp the angle of the initial rotation with the constraint
         float clampedAngle = Mathf.Clamp(angle, constraint.ConstraintMinAngle, constraint.ConstraintMaxAngle);
         joint.Rotation = Quaternion.AngleAxis(clampedAngle, axis);
     }

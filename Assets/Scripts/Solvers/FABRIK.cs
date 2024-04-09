@@ -57,6 +57,7 @@ public class FABRIK : InverseKinematicsDescriptor
         lengths.Clear();
         totalLength = 0f;
 
+        // Precompute the lengths of each pair of joints and the initial chain length
         for (int i = 0; i < joints.Count - 1; i++)
         {
             float boneLength = Vector3.Distance(joints[i].Position, joints[i + 1].Position);
@@ -75,6 +76,7 @@ public class FABRIK : InverseKinematicsDescriptor
 
         ComputeLengths();
 
+        // The lerp method is used to have more control over how the calculations are performed
         lerpMethod = useClampedLerp ? Vector3.Lerp : Vector3.LerpUnclamped;
     }
 
@@ -85,9 +87,11 @@ public class FABRIK : InverseKinematicsDescriptor
 
     public override void UpdateJoints(in Vector3 goal)
     {
+        // Check if the goal is further than the chain length 
         float sqrDistance = Vector3.SqrMagnitude(firstEffector.Position - goal);
         if (sqrDistance > totalLength * totalLength)
         {
+            // If the goal is further, each joints can be aligned
             for (int i = 0; i < joints.Count - 1; i++)
             {
                 float length = Vector3.Distance(joints[i].Position, goal);
@@ -106,6 +110,9 @@ public class FABRIK : InverseKinematicsDescriptor
             {
                 BackwardSolve(goal);
                 ForwardSolve(initialPosition);
+
+                // Compute the distance of the effector and the goal to compare it with a treshold
+                // To short circuit the rest of the computation if the distance is acceptable
                 sqrReachDistance = Vector3.SqrMagnitude(endEffector.Position - goal);
             }
         }
