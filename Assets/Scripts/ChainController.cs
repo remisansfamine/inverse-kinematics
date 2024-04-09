@@ -15,6 +15,7 @@ public class ChainController : InverseKinematicsController
 
             Vector3 boneDirection = joints[i + 1].Position - joints[i].Position;
 
+            // Readjust bones direction and position
             bone.primitive.transform.up = boneDirection.normalized;
             bone.primitive.transform.position = (joints[i].Position + joints[i + 1].Position) * 0.5f;
         }
